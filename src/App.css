@@ -1,0 +1,103 @@
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #222;
+  height: 10vh;
+  padding-top: 20px;
+  box-sizing: border-box;
+  color: white;
+}
+
+.App-title {
+  margin:0 auto;
+  font-size: 1.5em;
+  width:20vw;
+}
+
+.about {
+  float:right;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+.stacks {
+  width:90vw;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  height:80vh;
+}
+
+.gutter {
+  width:0;
+}
+
+.stack {
+  width:0;
+  background-color:#ccc;
+  display: flex;
+  flex-direction: column;
+}
+
+.stack-col {
+  width:90vw;
+  display:flex;
+  margin: 0 auto;
+}
+
+.stack-bar {
+  background-color: darkgreen;
+}
+
+.stack-col-beg {
+  background-color: transparent;
+}
+
+.stack-col-end {
+  flex-grow:0.5;
+  flex-basis:0.5vh;
+  width:100%;
+  background-color: darkgreen;
+}
+
+.disc-cnt {
+  width:100%;
+  display:flex;
+  flex-direction: row;
+  /* flex-wrap: nowrap;
+  align-content: space-around; */
+}
+
+
+.disc {
+  border: 1vh solid #ccc;
+  border-left:0;
+  border-right:0;
+  border-bottom:0;
+  box-sizing: border-box;
+  z-index:10;
+}
+
+#gameControlView {
+  padding-top:1em;
+  box-sizing: border-box;
+  height:10vh;
+  width:90vw;
+  margin:0 auto;
+  background-color: #222;
+  color:white;
+  display:flex;
+  flex-direction: row;
+}
+
+
+
+/* @keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+} */

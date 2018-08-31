@@ -1,0 +1,3 @@
+export const MOVE_STACK = 'MOVE_STACK';
+export const START_MOVE_DISC = 'START_MOVE_DISC';
+export const FINISH_MOVE_DISC = 'FINISH_MOVE_DISC';
