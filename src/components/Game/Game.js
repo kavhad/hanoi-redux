@@ -24,9 +24,12 @@ export class GamePage extends React.Component {
   componentWillReceiveProps(nextProps) {
     const { haveMovesLeft, nextMove, stacks } = nextProps;
 
-    if(haveMovesLeft && !this.state.isRunning) {
-      this.setState({isRunning:true});
-      this.scheduledLoop = setInterval(this.gameLoop, this.state.speed);
+    if(!haveMovesLeft && this.scheduledLoop) {
+
+      clearInterval(this.scheduledLoop);
+      this.setState({isRunning:false});
+      this.scheduledLoop = null;
+
     }
 
   }
@@ -35,19 +38,6 @@ export class GamePage extends React.Component {
     if(this.props.haveMovesLeft) {
       this.props.actions.consumeMove(this.props.nextMove);
     }
-    else {
-      clearInterval(this.scheduledLoop);
-      this.setState({isRunning:false});
-    }
-  }
-
-  executeMove(move) {
-
-    this.props.actions.consumeMove(move,
-      move.stackMove ?
-        new Promise((resolve) => setTimeout(() => resolve(), this.state.speed)) : null
-    );
-
   }
 
   initializeStateData(numOfDiscs = 6, speed = 50) {
@@ -110,10 +100,10 @@ export class GamePage extends React.Component {
 
       const intermediate = 'c' !== to && 'c' !== discStack ? 'c' : ('b' !== to && 'b' !== discStack ? 'b' : 'a');
 
-      this.setState({isMoving:true});
-
       this.props.actions.producesMoves(stackActions.createStackMove(discStack, to, intermediate, this.state.numberOfDiscs));
 
+      this.setState({isRunning:true});
+      this.scheduledLoop = setInterval(this.gameLoop, this.state.speed);
 
     };
 
