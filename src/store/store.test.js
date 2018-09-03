@@ -7,7 +7,23 @@ import configureStore from '../store/configureStore';
 
 describe('Store tests', () => {
 
-  it('Creates moves from stack with depth 2', () => {
+
+  it('Init stack', () => {
+
+    const store = configureStore(initialState);
+
+    store.dispatch(stackActions.initStack(2));
+
+    const actual = store.getState().stacks;
+    const expected = {a:[1,2],b:[],c:[]};
+
+    expect(actual).toEqual(expected);
+
+  });
+
+
+
+  it('Produce moves', () => {
 
     const store = configureStore(initialState);
 
