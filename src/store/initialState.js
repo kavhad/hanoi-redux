@@ -1,3 +1,4 @@
 export default {
-  stackMoves: []
+  stacks:{a:[],b:[],c:[]},
+  moves:[]
 };

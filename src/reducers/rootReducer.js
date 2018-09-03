@@ -1,6 +1,8 @@
 import { combineReducers } from 'redux';
-import stackMoveReducer from './stackMoveReducer';
+import moveReducer from './moveReducer';
+import stackReducer from './stackReducer';
 
 export default combineReducers({
-  stackMoves: stackMoveReducer
+  stacks: stackReducer,
+  moves: moveReducer
 });

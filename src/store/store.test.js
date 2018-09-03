@@ -11,6 +11,8 @@ describe('Store tests', () => {
 
     const store = configureStore(initialState);
 
+    store.dispatch(stackActions.initStack(2));
+
     const moveStackAction = {
       start: 'a',
       intermediate: 'b',
@@ -20,34 +22,66 @@ describe('Store tests', () => {
 
     const dispatcher = (action) => store.dispatch(action);
 
-    stackActions.moveStack(moveStackAction)(dispatcher);
+    stackActions.producesMoves(moveStackAction)(dispatcher);
 
-    const actual = store.getState().stackMoves;
-    const expected = [{from:'a', to: 'b'},{from:'a', to:'c'},{from:'b',to:'c'}];
+    const actual = store.getState().moves;
+    const expected = [{discMove:{from:'a', to: 'b'}},{discMove:{from:'a', to:'c'}, stackMove:{start:'b',intermediate:'a',end:'c', stackDepth:1}}];
     expect(actual).toEqual(expected);
 
   });
 
-  it('Creates moves from stack with depth 3', () => {
+  it('Consume moves updates moves correctly', () => {
+    const store = configureStore(initialState);
 
-    const store = createStore(rootReducer, initialState);
+    store.dispatch(stackActions.initStack(2));
 
     const moveStackAction = {
       start: 'a',
       intermediate: 'b',
       end: 'c',
-      stackDepth: 3
+      stackDepth: 2
     };
 
     const dispatcher = (action) => store.dispatch(action);
 
-    stackActions.moveStack(moveStackAction)(dispatcher);
+    stackActions.producesMoves(moveStackAction)(dispatcher);
+    const firstMove = store.getState().moves[0];
 
-    const actual = store.getState().stackMoves;
-    const expected = [{from:'a', to: 'c'},{from:'a', to:'b'},{from:'c',to:'b'},{from:'a',to:'c'},{from:'b', to: 'a'},{from:'b', to:'c'},{from:'a',to:'c'}];
+    stackActions.consumeMove(firstMove)(dispatcher);
+
+    const actual = store.getState().moves;
+    const expected = [{discMove:{from:'a', to:'c'}, stackMove:{start:'b',intermediate:'a',end:'c', stackDepth:1}}];
 
     expect(actual).toEqual(expected);
 
   });
+
+  it('Stack updates correctly', () => {
+
+    const store = configureStore(initialState);
+
+    store.dispatch(stackActions.initStack(2));
+
+    const moveStackAction = {
+      start: 'a',
+      intermediate: 'b',
+      end: 'c',
+      stackDepth: 2
+    };
+
+    const dispatcher = (action) => store.dispatch(action);
+
+    stackActions.producesMoves(moveStackAction)(dispatcher);
+    const firstMove = store.getState().moves[0];
+
+    stackActions.consumeMove(firstMove)(dispatcher);
+
+    const actual = store.getState().stacks;
+    const exptected = {a:[2],b:[1],c:[]};
+
+    expect(actual).toEqual(exptected);
+
+  });
+
 
 });

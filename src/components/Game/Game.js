@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import * as stackActions from '../../actions/stackActions';
 import GameView from './GameView';
-import GameControlView from './GameControlView'
+import GameControlView from './GameControlView';
 
 export class GamePage extends React.Component {
 
@@ -15,63 +15,53 @@ export class GamePage extends React.Component {
 
     this.clickStack = this.clickStack.bind(this);
     this.onSaveGameParameters = this.onSaveGameParameters.bind(this);
+    this.gameLoop = this.gameLoop.bind(this);
+    this.scheduledLoop = null;
   }
+
 
 
   componentWillReceiveProps(nextProps) {
-    const { stackMoves } = nextProps;
+    const { haveMovesLeft, nextMove, stacks } = nextProps;
 
-    stackMoves.forEach(nextMove =>  {
-      this.updateStackByMove(nextMove);
-    });
-
-  }
-
-  updateStackByMove(move) {
-
-
-    const stacks = this.state.stacks;
-    const disc = stacks[move.from].shift();
-    stacks[move.to].unshift(disc);
-
-    //will update stacks to reflect new move
-    this.setState({
-      stacks
-    });
-
-    setTimeout(() => {
-      //call action to notify move is finished,
-      //will trigger next move to be ready for handling and causes the
-      //componentWillReceiveProps to be called again
-      this.props.actions.finishMoveDisc(move);
-    }, this.state.speed);
+    if(haveMovesLeft && !this.state.isRunning) {
+      this.setState({isRunning:true});
+      this.scheduledLoop = setInterval(this.gameLoop, this.state.speed);
+    }
 
   }
 
+  gameLoop() {
+    if(this.props.haveMovesLeft) {
+      this.props.actions.consumeMove(this.props.nextMove);
+    }
+    else {
+      clearInterval(this.scheduledLoop);
+      this.setState({isRunning:false});
+    }
+  }
+
+  executeMove(move) {
+
+    this.props.actions.consumeMove(move,
+      move.stackMove ?
+        new Promise((resolve) => setTimeout(() => resolve(), this.state.speed)) : null
+    );
+
+  }
 
   initializeStateData(numOfDiscs = 6, speed = 50) {
+
+    this.props.actions.initStack(numOfDiscs);
     const data = {
-      stacks: {a:this.createStack(numOfDiscs), b:[],c:[]},
       numberOfDiscs:numOfDiscs,
       colors:this.colours(numOfDiscs),
-      isMoving:false,
+      isRunning:false,
       speed: speed
     };
 
     return data;
   }
-
-  createStack(numOfDiscs) {
-    const stack = [];
-
-    for(let i = 1; i <= numOfDiscs; i++) {
-      stack.push(i);
-    }
-
-    return stack;
-
-  }
-
 
   colours(numOfDiscs) {
 
@@ -99,15 +89,15 @@ export class GamePage extends React.Component {
 
     return () => {
 
-      if(this.state.isMoving)
+      if(this.state.isRunning)
         return;
 
       let discStack = null;
 
-      if(this.state.stacks.a.length > 0) {
+      if(this.props.stacks.a.length > 0) {
         discStack = 'a';
       }
-      else if(this.state.stacks.b.length > 0) {
+      else if(this.props.stacks.b.length > 0) {
         discStack = 'b';
       }
       else {
@@ -122,18 +112,15 @@ export class GamePage extends React.Component {
 
       this.setState({isMoving:true});
 
-      this.props.actions.moveStack(stackActions.createStackMove(discStack, to, intermediate, this.state.numberOfDiscs))
-          .then(() => {
-            this.setState({isMoving:false});
-          });
+      this.props.actions.producesMoves(stackActions.createStackMove(discStack, to, intermediate, this.state.numberOfDiscs));
+
+
     };
 
   }
 
   onSaveGameParameters(numberOfDiscs, speed) {
-    if(!this.state.isMoving) {
-      this.setState(this.initializeStateData(numberOfDiscs, speed));
-    }
+    this.setState(this.initializeStateData(numberOfDiscs, speed));
   }
 
   render() {
@@ -144,14 +131,16 @@ export class GamePage extends React.Component {
         speed={this.state.speed}
         numberOfDiscs={this.state.numberOfDiscs}
         />
+        {
+        this.props.stacks &&
         <GameView
-        stacks={this.state.stacks}
+        stacks={this.props.stacks}
         stackHeightTotalGrow={this.calcStackHeightTotalGrow()}
         discWidthMultiplier={this.calcDiscWidthMultiplier()}
         colors={this.state.colors}
         totalNumDiscs={this.state.numberOfDiscs}
         clickStack={this.clickStack}
-        />
+        />}
       </div>
     );
   }
@@ -160,12 +149,16 @@ export class GamePage extends React.Component {
 }
 
 GamePage.propTypes = {
-  stackMoves: PropTypes.array.isRequired,
-  actions: PropTypes.object.isRequired
+  nextMove: PropTypes.object,
+  haveMovesLeft: PropTypes.bool.isRequired,
+  actions: PropTypes.object.isRequired,
+  stacks: PropTypes.object.isRequired
 };
 
 const mapStateToProps = (state, ownProps) => ({
-  stackMoves: state.stackMoves
+  haveMovesLeft: state.moves.length > 0,
+  nextMove: state.moves.length > 0 ? state.moves[0] : null,
+  stacks: state.stacks
 });
 
 const mapDispatchToProps = (dispatch) => ({
